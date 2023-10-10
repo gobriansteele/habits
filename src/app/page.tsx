@@ -1,33 +1,28 @@
-import Image from 'next/image'
 import { PrismaClient } from '@prisma/client'
+import db from '@/db'
+import {submitForm} from "@/app/actions"
 import {
   ChevronRightIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
+import {EntryForm, TextInput} from '@/components'
 
 
 export default async function Home() {
-const prisma = new PrismaClient()
-  const days = await prisma.main.findMany()
+
+  const days = await db.main.findMany()
+  const todayEntered = days.some((day) => {
+    const date = new Date(new Date(day.date)).toISOString().slice(0, 10)
+
+    return date === new Date().toISOString().slice(0, 10)
+  })
+
+
+
   return (
       <div className="px-8 bg-gray-50 pt-12 min-h-screen">
         <div className="flex items-center justify-between">
           <div className="w-80">
-            <div className="relative mt-1 rounded-md shadow-sm">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <MagnifyingGlassIcon
-                    className="h-5 w-5 text-gray-400"
-                    aria-hidden="true"
-                />
-              </div>
-              <input
-                  type="text"
-                  name="search"
-                  id="search"
-                  className="block w-full rounded-md border-gray-300 pl-10 focus:ring-0 focus:border-gray-400 focus:outline-none text-sm"
-                  placeholder="Search"
-              />
-            </div>
+
           </div>
           <div className="mt-0 ml-16 flex-none">
             <button
@@ -69,12 +64,10 @@ const prisma = new PrismaClient()
                   {days.map((day) => {
                       const utcString = new Date(day.date).toUTCString()
                     const betterDate = new Date(utcString)
-                    console.log(betterDate)
                     const date = betterDate.getUTCDate()
                     const month = betterDate.getUTCMonth() + 1
                     const year = betterDate.getUTCFullYear()
 
-                    console.log(day.meditate)
 
                       return (
                       <tr key={`${day.date}`}>
@@ -111,6 +104,9 @@ const prisma = new PrismaClient()
             </div>
           </div>
         </div>
+        {!todayEntered ? (
+        <EntryForm onSubmit={submitForm} />
+        ) : null}
       </div>
   );
 }
